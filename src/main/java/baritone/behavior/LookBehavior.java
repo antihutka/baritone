@@ -36,6 +36,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
      */
     private boolean force;
 
+    private boolean smooth;
+
     /**
      * The last player yaw angle. Used when free looking
      *
@@ -57,6 +59,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             }
             this.target = new Rotation(this.target.getYaw() + (float) (rand * Baritone.settings().randomLooking113.value), this.target.getPitch());
         }
+        this.smooth = Baritone.settings().smoothLook.value && !force;
         this.force = force || !Baritone.settings().freeLook.value;
     }
 
@@ -72,12 +75,23 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         switch (event.getState()) {
             case PRE: {
                 if (this.force) {
+                    float oldYaw = ctx.player().getYRot();
                     ctx.player().setYRot(this.target.getYaw());
                     float oldPitch = ctx.player().getXRot();
                     float desiredPitch = this.target.getPitch();
                     ctx.player().setXRot(desiredPitch);
                     ctx.player().setYRot((float) (ctx.player().getYRot() + (Math.random() - 0.5) * Baritone.settings().randomLooking.value));
                     ctx.player().setXRot((float) (ctx.player().getXRot() +  (Math.random() - 0.5) * Baritone.settings().randomLooking.value));
+                    if (this.smooth)
+                    {
+                        ctx.player().setYRot(0.1f * ctx.player().getYRot() + 0.9f * oldYaw);
+                        float currentPitch = ctx.player().getXRot();
+                        if (oldPitch > currentPitch + 180)
+                            oldPitch -= 360;
+                        if (oldPitch < currentPitch - 180)
+                            oldPitch += 360;
+                        ctx.player().setXRot(0.1f * currentPitch + 0.9f * oldPitch);
+                    }
                     if (desiredPitch == oldPitch && !Baritone.settings().freeLook.value) {
                         nudgeToLevel();
                     }

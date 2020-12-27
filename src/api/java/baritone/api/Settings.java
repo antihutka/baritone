@@ -621,6 +621,11 @@ public final class Settings {
     public final Setting<Boolean> freeLook = new Setting<>(true);
 
     /**
+     * Move camera smoothly
+     */
+    public final Setting<Boolean> smoothLook = new Setting<>(true);
+
+    /**
      * Will cause some minor behavioral differences to ensure that Baritone works on anticheats.
      * <p>
      * At the moment this will silently set the player's rotations when using freeLook so you're not sprinting in
