@@ -82,6 +82,16 @@ public final class Settings {
     public final Setting<Double> blockPlacementPenalty = new Setting<>(20D);
 
     /**
+     * Block placement penalty with too many throwaway items in the inventory
+     */
+    public final Setting<Double> blockPlacementPenaltyLow = new Setting<>(1D);
+
+    /**
+     * Minimum number of throwaway items in the inventory to apply blockPlacementPenaltyLow
+     */
+    public final Setting<Integer> blockPlacementPenaltyThreshold = new Setting<>(256);
+
+    /**
      * This is just a tiebreaker to make it less likely to break blocks if it can avoid it.
      * For example, fire has a break cost of 0, this makes it nonzero, so all else being equal
      * it will take an otherwise equivalent route that doesn't require it to put out fire.
