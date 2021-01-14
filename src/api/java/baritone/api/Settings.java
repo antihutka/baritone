@@ -797,6 +797,11 @@ public final class Settings {
     public final Setting<Integer> exploreMaintainY = new Setting<>(64);
 
     /**
+     * Weight for exploreMaintainY
+     */
+    public final Setting<Double> exploreMaintainYWeight = new Setting<>(1D);
+
+    /**
      * Replant normal Crops while farming and leave cactus and sugarcane to regrow
      */
     public final Setting<Boolean> replantCrops = new Setting<>(true);
