@@ -168,7 +168,8 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
         return new GoalXZ(x, z) {
             @Override
             public double heuristic(int x, int y, int z) {
-                return super.heuristic(x, y, z) + GoalYLevel.calculate(Baritone.settings().exploreMaintainY.value, y);
+                return super.heuristic(x, y, z) +
+                        Baritone.settings().exploreMaintainYWeight.value * GoalYLevel.calculate(Baritone.settings().exploreMaintainY.value, y);
             }
         };
     }
