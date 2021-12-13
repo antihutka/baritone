@@ -31,6 +31,7 @@ import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
@@ -62,12 +63,25 @@ public final class InventoryBehavior extends Behavior {
             // we have a crafting table or a chest or something open
             return;
         }
-        if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
-            swapWithHotBar(firstValidThrowaway(), 8);
+        if (countThrowawayStacksInHotbar() < 2) {
+            NonNullList<ItemStack> invy = ctx.player().getInventory().items;
+            for (int slot = 7; slot < 9; slot++) {
+                if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(slot).getItem()))
+                    continue;
+                int another = firstValidThrowawayInInventory();
+                if (another < 0)
+                    break;
+                swapWithHotBar(another, slot);
+            }
         }
+
         int pick = bestToolAgainst(Blocks.STONE, PickaxeItem.class);
         if (pick >= 9) {
             swapWithHotBar(pick, 0);
+        }
+        int shovel = bestToolAgainst(Blocks.DIRT, ShovelItem.class);
+        if (shovel >= 9) {
+            swapWithHotBar(shovel, 1);
         }
     }
 
@@ -112,6 +126,27 @@ public final class InventoryBehavior extends Behavior {
         }
         return -1;
     }
+
+    private int firstValidThrowawayInInventory() { // TODO offhand idk
+        NonNullList<ItemStack> invy = ctx.player().getInventory().items;
+        for (int i = 9; i < invy.size(); i++) {
+            if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int countThrowawayStacksInHotbar() {
+        int count = 0;
+        NonNullList<ItemStack> invy = ctx.player().getInventory().items;
+        for (int i = 0; i < 9; i++) {
+            if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem()))
+                count++;
+        }
+        return count;
+    }
+
     public int countValidThrowaway() {
         int count = 0;
         NonNullList<ItemStack> invy = ctx.player().getInventory().items;
