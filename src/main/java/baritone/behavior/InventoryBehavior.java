@@ -128,12 +128,17 @@ public final class InventoryBehavior extends Behavior {
 
     private int firstValidThrowawayInInventory() { // TODO offhand idk
         NonNullList<ItemStack> invy = ctx.player().getInventory().items;
+        int slot = -1;
+        int smallestStack = 0;
         for (int i = 9; i < invy.size(); i++) {
             if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
-                return i;
+                if (slot < 0 || smallestStack > invy.get(i).getCount()) {
+                    slot = i;
+                    smallestStack = invy.get(i).getCount();
+                }
             }
         }
-        return -1;
+        return slot;
     }
 
     private int countThrowawayStacksInHotbar() {
