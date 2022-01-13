@@ -36,11 +36,7 @@ import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.WaterFluid;
+import net.minecraft.world.level.material.*;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -429,7 +425,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return COST_INF;
             }
             double result = 1 / strVsBlock;
-            result += context.breakBlockAdditionalCost;
+            if (!Baritone.settings().blockBreakNoPenaltyFor.value.contains(state.getBlock()))
+                result += context.breakBlockAdditionalCost;
             result *= mult;
             if (includeFalling) {
                 BlockState above = context.get(x, y + 1, z);

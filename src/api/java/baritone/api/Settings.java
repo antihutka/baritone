@@ -106,6 +106,26 @@ public final class Settings {
      */
     public final Setting<Double> blockBreakAdditionalPenalty = new Setting<>(2D);
 
+    public final Setting<List<Block>> blockBreakNoPenaltyFor = new Setting<>(new ArrayList<>(Arrays.asList(
+            Blocks.IRON_ORE,
+            Blocks.COAL_ORE,
+            Blocks.GOLD_ORE,
+            Blocks.DIAMOND_ORE,
+            Blocks.COPPER_ORE,
+            Blocks.LAPIS_ORE,
+            Blocks.REDSTONE_ORE,
+            Blocks.DEEPSLATE_COAL_ORE,
+            Blocks.DEEPSLATE_COPPER_ORE,
+            Blocks.DEEPSLATE_DIAMOND_ORE,
+            Blocks.DEEPSLATE_EMERALD_ORE,
+            Blocks.DEEPSLATE_IRON_ORE,
+            Blocks.DEEPSLATE_LAPIS_ORE,
+            Blocks.DEEPSLATE_REDSTONE_ORE,
+            Blocks.DEEPSLATE_GOLD_ORE,
+            Blocks.NETHER_GOLD_ORE,
+            Blocks.NETHER_QUARTZ_ORE
+    )));
+
     /**
      * Additional penalty for hitting the space bar (ascend, pillar, or parkour) because it uses hunger
      */
@@ -115,6 +135,11 @@ public final class Settings {
      * Walking on water uses up hunger really quick, so penalize it
      */
     public final Setting<Double> walkOnWaterOnePenalty = new Setting<>(3D);
+
+    /**
+     * Don't step on mushrooms!
+     */
+    public final Setting<Double> walkOnMushroomPenalty = new Setting<>(0.5D);
 
     /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
