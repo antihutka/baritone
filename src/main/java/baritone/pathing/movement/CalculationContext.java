@@ -71,6 +71,7 @@ public class CalculationContext {
     public double jumpPenalty;
     public final double walkOnWaterOnePenalty;
     public final BetterWorldBorder worldBorder;
+    public final double walkOnMushroomPenalty;
 
     public CalculationContext(IBaritone baritone) {
         this(baritone, false);
@@ -115,6 +116,7 @@ public class CalculationContext {
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
+        this.walkOnMushroomPenalty = Baritone.settings().walkOnMushroomPenalty.value;
     }
 
     public final IBaritone getBaritone() {
