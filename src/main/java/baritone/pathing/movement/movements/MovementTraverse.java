@@ -90,6 +90,8 @@ public class MovementTraverse extends Movement {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 } else if (destOn.getBlock() == Blocks.WATER) {
                     WC += context.walkOnWaterOnePenalty;
+                } else if (destOn.getBlock() == Blocks.GRASS_BLOCK) {
+                    WC *= context.walkOnGrassMultiplier;
                 } else if (pb1.getBlock() == Blocks.BROWN_MUSHROOM || destOn.getBlock() == Blocks.RED_MUSHROOM) {
                     WC += context.walkOnMushroomPenalty;
                 }

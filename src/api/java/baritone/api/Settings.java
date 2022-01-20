@@ -142,6 +142,11 @@ public final class Settings {
     public final Setting<Double> walkOnMushroomPenalty = new Setting<>(0.5D);
 
     /**
+     * Prefer walking on grass
+     */
+    public final Setting<Double> walkOnGrassCostMultiplier = new Setting<>(0.75D);
+
+    /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
      * Reliability: questionable.
      */
