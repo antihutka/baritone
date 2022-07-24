@@ -23,24 +23,25 @@ import baritone.api.Settings;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.SettingsUtil;
+
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.BaseComponent;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
-import static baritone.api.utils.SettingsUtil.settingTypeToString;
-import static baritone.api.utils.SettingsUtil.settingValueToString;
+import static baritone.api.utils.SettingsUtil.*;
 
 public class SetCommand extends Command {
 
@@ -64,7 +65,7 @@ public class SetCommand extends Command {
             args.requireMax(1);
             List<? extends Settings.Setting> toPaginate =
                     (viewModified ? SettingsUtil.modifiedSettings(Baritone.settings()) : Baritone.settings().allSettings).stream()
-                            .filter(s -> !s.getName().equals("logger"))
+                            .filter(s -> !javaOnlySetting(s))
                             .filter(s -> s.getName().toLowerCase(Locale.US).contains(search.toLowerCase(Locale.US)))
                             .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getName(), s2.getName()))
                             .collect(Collectors.toList());
@@ -77,18 +78,19 @@ public class SetCommand extends Command {
                                     : String.format("All %ssettings:", viewModified ? "modified " : "")
                     ),
                     setting -> {
-                        TextComponent typeComponent = new TextComponent(String.format(
+                        MutableComponent typeComponent = Component.literal(String.format(
                                 " (%s)",
                                 settingTypeToString(setting)
                         ));
                         typeComponent.setStyle(typeComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
-                        TextComponent hoverComponent = new TextComponent("");
+                        MutableComponent hoverComponent = Component.literal("");
                         hoverComponent.setStyle(hoverComponent.getStyle().withColor(ChatFormatting.GRAY));
                         hoverComponent.append(setting.getName());
                         hoverComponent.append(String.format("\nType: %s", settingTypeToString(setting)));
                         hoverComponent.append(String.format("\n\nValue:\n%s", settingValueToString(setting)));
+                        hoverComponent.append(String.format("\n\nDefault Value:\n%s", settingDefaultToString(setting)));
                         String commandSuggestion = Baritone.settings().prefix.value + String.format("set %s ", setting.getName());
-                        TextComponent component = new TextComponent(setting.getName());
+                        MutableComponent component = Component.literal(setting.getName());
                         component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
                         component.append(typeComponent);
                         component.setStyle(component.getStyle()
@@ -127,6 +129,12 @@ public class SetCommand extends Command {
         if (setting == null) {
             throw new CommandInvalidTypeException(args.consumed(), "a valid setting");
         }
+        if (javaOnlySetting(setting)) {
+            // ideally it would act as if the setting didn't exist
+            // but users will see it in Settings.java or its javadoc
+            // so at some point we have to tell them or they will see it as a bug
+            throw new CommandInvalidStateException(String.format("Setting %s can only be used via the api.", setting.getName()));
+        }
         if (!doingSomething && !args.hasAny()) {
             logDirect(String.format("Value of setting %s:", setting.getName()));
             logDirect(settingValueToString(setting));
@@ -162,12 +170,12 @@ public class SetCommand extends Command {
                         settingValueToString(setting)
                 ));
             }
-            BaseComponent oldValueComponent = new TextComponent(String.format("Old value: %s", oldValue));
+            MutableComponent oldValueComponent = Component.literal(String.format("Old value: %s", oldValue));
             oldValueComponent.setStyle(oldValueComponent.getStyle()
                     .withColor(ChatFormatting.GRAY)
                     .withHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            new TextComponent("Click to set the setting back to this value")
+                            Component.literal("Click to set the setting back to this value")
                     ))
                     .withClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,

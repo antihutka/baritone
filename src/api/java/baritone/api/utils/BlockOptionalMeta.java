@@ -29,7 +29,7 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import net.minecraft.server.packs.resources.SimpleReloadableResourceManager;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -147,11 +147,11 @@ public final class BlockOptionalMeta {
             PackRepository rpl = new PackRepository(PackType.SERVER_DATA, new ServerPacksSource());
             rpl.reload();
             PackResources thePack = rpl.getAvailablePacks().iterator().next().open();
-            ReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(PackType.SERVER_DATA);
+            ReloadableResourceManager resourceManager = new ReloadableResourceManager(PackType.SERVER_DATA);
             manager = new LootTables(predicate);
             resourceManager.registerReloadListener(manager);
             try {
-                resourceManager.reload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), Collections.singletonList(thePack), CompletableFuture.completedFuture(Unit.INSTANCE)).get();
+                resourceManager.createReload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), CompletableFuture.completedFuture(Unit.INSTANCE), Collections.singletonList(thePack)).done().get();
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }
@@ -174,7 +174,7 @@ public final class BlockOptionalMeta {
                 // the other overload for generate doesnt work in forge because forge adds code that requires a non null world
                 getManager().get(lootTableLocation).getRandomItems(
                         new LootContext.Builder((ServerLevel) null)
-                                .withRandom(new Random())
+                                .withRandom(RandomSource.create())
                                 .withParameter(LootContextParams.ORIGIN, Vec3.atLowerCornerOf(BlockPos.ZERO))
                                 .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
                                 .withOptionalParameter(LootContextParams.BLOCK_ENTITY, null)

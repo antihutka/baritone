@@ -15,24 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.cache;
+package baritone.launch;import net.minecraftforge.fml.common.Mod;
 
-import java.util.List;
-import net.minecraft.world.item.ItemStack;
-
-/**
- * @author Brady
- * @since 9/23/2018
- */
-public interface IRememberedInventory {
-
-    /**
-     * @return The contents of this inventory
-     */
-    List<ItemStack> getContents();
-
-    /**
-     * @return The number of slots in this inventory
-     */
-    int getSize();
+@Mod("baritoe")
+public class BaritoneForgeModXD {
 }

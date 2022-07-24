@@ -41,6 +41,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import java.util.List;
 import java.util.Optional;
 
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
@@ -53,8 +54,12 @@ import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____S
 public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
+        if (!bsi.worldBorder.canPlaceAt(x, y)) {
+            return true;
+        }
         Block b = state.getBlock();
-        return b == Blocks.ICE // ice becomes water, and water can mess up the path
+        return Baritone.settings().blocksToDisallowBreaking.value.contains(b)
+                || b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof InfestedBlock // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no reason
                 || avoidAdjacentBreaking(bsi, x, y + 1, z, true)
@@ -93,7 +98,13 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof AirBlock) { // early return for most common case
             return true;
         }
-        if (block instanceof BaseFireBlock || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof AbstractSkullBlock || block == Blocks.BUBBLE_COLUMN || block instanceof ShulkerBoxBlock || block instanceof SlabBlock || block instanceof TrapDoorBlock || block == Blocks.HONEY_BLOCK || block == Blocks.END_ROD || block == Blocks.POINTED_DRIPSTONE || block == Blocks.AMETHYST_CLUSTER) {
+        if (block instanceof BaseFireBlock || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof AbstractSkullBlock || block == Blocks.BUBBLE_COLUMN || block instanceof ShulkerBoxBlock || block instanceof SlabBlock || block instanceof TrapDoorBlock || block == Blocks.HONEY_BLOCK || block == Blocks.END_ROD || block == Blocks.SWEET_BERRY_BUSH || block == Blocks.POINTED_DRIPSTONE || block instanceof AmethystClusterBlock || block instanceof AzaleaBlock) {
+            return false;
+        }
+        if (block == Blocks.BIG_DRIPLEAF) {
+            return false;
+        }
+        if (block == Blocks.POWDER_SNOW) {
             return false;
         }
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
@@ -139,6 +150,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             return true;
         }
+        if (block instanceof CauldronBlock) {
+            return false;
+        }
         // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
         // has already been accounted for above
         // therefore it's safe to not construct a blockpos from our x, y, z ints and instead just pass null
@@ -179,6 +193,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block == Blocks.VINE
                 || block == Blocks.LADDER
                 || block == Blocks.COCOA
+                || block instanceof AzaleaBlock
                 || block instanceof DoorBlock
                 || block instanceof FenceGateBlock
                 || block instanceof SnowLayerBlock
@@ -278,6 +293,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return !state.getFluidState().isEmpty()
                 || block == Blocks.MAGMA_BLOCK
                 || block == Blocks.CACTUS
+                || block == Blocks.SWEET_BERRY_BUSH
                 || block instanceof BaseFireBlock
                 || block == Blocks.END_PORTAL
                 || block == Blocks.COBWEB
@@ -304,6 +320,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         if (isBlockNormalCube(state)) {
+            return true;
+        }
+        if (block instanceof AzaleaBlock) {
             return true;
         }
         if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.value)) { // TODO reconsider this
@@ -375,6 +394,9 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
+        if (!bsi.worldBorder.canPlaceAt(x, z)) {
+            return false;
+        }
         // can we look at the center of a side face of this block and likely be able to place?
         // (thats how this check is used)
         // therefore dont include weird things that we technically could place against (like carpet) but practically can't
@@ -440,7 +462,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param ts  previously calculated ToolSet
      */
     static void switchToBestToolFor(IPlayerContext ctx, BlockState b, ToolSet ts, boolean preferSilkTouch) {
-        if (!Baritone.settings().disableAutoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
+        if (Baritone.settings().autoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
             ctx.player().getInventory().selected = ts.getBestSlot(b.getBlock(), preferSilkTouch);
         }
     }
@@ -528,7 +550,12 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof AmethystClusterBlock) {
             return false;
         }
-        return Block.isShapeFullBlock(state.getCollisionShape(null, null));
+        try {
+            return Block.isShapeFullBlock(state.getCollisionShape(null, null));
+        } catch (Exception ignored) {
+            // if we can't get the collision shape, assume it's bad and add to blocksToAvoid
+        }
+        return false;
     }
 
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown, boolean wouldSneak) {

@@ -35,10 +35,8 @@ import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;
 import baritone.utils.accessor.IGuiScreen;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.BaseComponent;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Tuple;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -78,12 +76,12 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         if (settings.echoCommands.value) {
             String msg = command + rest;
             String toDisplay = settings.censorRanCommands.value ? command + " ..." : msg;
-            BaseComponent component = new TextComponent(String.format("> %s", toDisplay));
+            MutableComponent component = Component.literal(String.format("> %s", toDisplay));
             component.setStyle(component.getStyle()
                     .withColor(ChatFormatting.WHITE)
                     .withHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            new TextComponent("Click to rerun command")
+                            Component.literal("Click to rerun command")
                     ))
                     .withClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
@@ -123,7 +121,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
         } else if (argc.hasExactlyOne()) {
             for (Settings.Setting setting : settings.allSettings) {
-                if (setting.getName().equals("logger")) {
+                if (SettingsUtil.javaOnlySetting(setting)) {
                     continue;
                 }
                 if (setting.getName().equalsIgnoreCase(pair.getA())) {
@@ -176,7 +174,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                             .stream();
                 }
                 Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
-                if (setting != null) {
+                if (setting != null && !SettingsUtil.javaOnlySetting(setting)) {
                     if (setting.getValueClass() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
                         if ((Boolean) setting.value) {
