@@ -30,7 +30,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Matrix4f;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +44,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -229,8 +229,7 @@ public final class PathRenderer implements IRenderer, Helper {
         if (!settings.renderGoalAnimated.value) {
             // y = 1 causes rendering issues when the player is at the same y as the top of a block for some reason
             y = 0.999F;
-        }
-        else {
+        } else {
             y = Mth.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
         }
         if (goal instanceof IGoalRenderPos) {
